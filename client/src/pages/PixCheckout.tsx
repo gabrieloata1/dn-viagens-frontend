@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useLocation, useParams } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Loader2, Copy, Check, Upload, ChevronLeft, Clock, User, Phone } from "lucide-react";
+import { Loader2, Copy, Check, Upload, ChevronLeft, Clock, User, Phone, Users } from "lucide-react";
 import { toast } from "sonner";
 import { generatePixPayload, generateTxid } from "@/lib/pix";
 import Header from "@/components/Header";
@@ -27,7 +27,7 @@ interface CartItem {
   name: string;
   destination: string;
   price: number;
-  quantity: number;
+  quantity: number; // Representa Adultos
   optionals?: string[];
   date?: string;
   children?: number;
@@ -241,6 +241,7 @@ export default function PixCheckout() {
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div className="space-y-6">
+              {/* QR Code */}
               <Card className="p-8">
                 <div className="flex items-center justify-center gap-2 mb-6 text-secondary">
                   <Clock className="w-5 h-5" />
@@ -278,6 +279,7 @@ export default function PixCheckout() {
                 </div>
               </Card>
 
+              {/* Dados do Cliente */}
               <Card className="p-6">
                 <h2 className="text-xl font-bold mb-4">Seus Dados</h2>
                 <div className="space-y-4">
@@ -311,39 +313,66 @@ export default function PixCheckout() {
               </Card>
             </div>
 
+            {/* Resumo da Reserva */}
             <div className="space-y-6">
               <Card className="p-6">
                 <h2 className="text-xl font-bold mb-4">Resumo da Reserva</h2>
                 <div className="space-y-4">
                   {reservation.items.map((item) => (
-                    <div key={item.id} className="space-y-2 pb-3 border-b border-border last:border-0">
-                      <div className="flex justify-between">
-                        <span className="font-bold">{item.name}</span>
-                        <span className="font-bold">R$ {(item.price * item.quantity).toFixed(2).replace(".", ",")}</span>
+                    <div key={item.id} className="space-y-3 pb-3 border-b border-border last:border-0">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="font-bold text-lg">{item.name}</p>
+                          <p className="text-sm text-muted-foreground">{item.destination}</p>
+                        </div>
+                        <span className="font-bold text-secondary">R$ {reservation.totalAmount.toFixed(2).replace(".", ",")}</span>
                       </div>
-                      <div className="text-sm text-muted-foreground">
-                        <p>{item.quantity} adultos {item.children ? `+ ${item.children} crianças` : ''}</p>
-                        {item.date && <p>Data: {item.date}</p>}
-                        {item.optionals && item.optionals.length > 0 && (
-                          <div className="mt-1">
-                            <p className="font-semibold text-xs uppercase tracking-wider">Opcionais:</p>
-                            <ul className="list-disc list-inside">
-                              {item.optionals.map((opt, idx) => <li key={idx}>{opt}</li>)}
-                            </ul>
+                      
+                      <div className="grid grid-cols-2 gap-2 text-sm bg-muted/50 p-3 rounded-lg">
+                        <div className="flex items-center gap-2">
+                          <Users className="w-4 h-4 text-primary" />
+                          <span className="font-medium">{item.quantity} Adultos</span>
+                        </div>
+                        {item.children !== undefined && item.children > 0 && (
+                          <div className="flex items-center gap-2">
+                            <Users className="w-4 h-4 text-primary" />
+                            <span className="font-medium">{item.children} Crianças</span>
+                          </div>
+                        )}
+                        {item.date && (
+                          <div className="flex items-center gap-2 col-span-2 mt-1">
+                            <Clock className="w-4 h-4 text-primary" />
+                            <span className="font-medium">Data: {new Date(item.date + 'T00:00:00').toLocaleDateString('pt-BR')}</span>
                           </div>
                         )}
                       </div>
+
+                      {item.optionals && item.optionals.length > 0 && (
+                        <div className="mt-2">
+                          <p className="font-bold text-xs uppercase tracking-wider text-muted-foreground mb-1">Atrações Opcionais:</p>
+                          <ul className="space-y-1">
+                            {item.optionals.map((opt, idx) => (
+                              <li key={idx} className="text-sm flex items-center gap-2">
+                                <Check className="w-3 h-3 text-green-500" />
+                                {opt}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                     </div>
                   ))}
+                  
                   <div className="flex justify-between items-center pt-2">
-                    <span className="text-lg font-bold">Total</span>
-                    <span className="text-2xl font-bold text-secondary">
+                    <span className="text-lg font-bold">Total a Pagar</span>
+                    <span className="text-3xl font-bold text-secondary">
                       R$ {reservation.totalAmount.toFixed(2).replace(".", ",")}
                     </span>
                   </div>
                 </div>
               </Card>
 
+              {/* Comprovante */}
               <Card className="p-6">
                 <h2 className="text-xl font-bold mb-2">Comprovante de Pagamento</h2>
                 <p className="text-sm text-muted-foreground mb-4">
@@ -353,7 +382,8 @@ export default function PixCheckout() {
                 <label className="block mb-4 cursor-pointer">
                   <div className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${proofFile ? "border-primary bg-primary/5" : "border-border hover:bg-muted/30"}`}>
                     <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-                    <p className="text-sm font-semibold">{proofFile ? `✓ ${proofFile.name}` : "Clique para anexar"}</p>
+                    <p className="text-sm font-semibold">{proofFile ? `✓ ${proofFile.name}` : "Clique para anexar foto ou PDF"}</p>
+                    <p className="text-xs text-muted-foreground mt-1">Máximo 5MB</p>
                   </div>
                   <input type="file" accept="image/*,.pdf" onChange={handleFileSelect} className="hidden" />
                 </label>
