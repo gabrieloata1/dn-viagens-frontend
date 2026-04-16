@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Copy, Check, Upload, ChevronLeft, Clock, User, Phone } from "lucide-react";
+import { Loader2, Copy, Check, Upload, ChevronLeft, Clock, User, Phone, Calendar } from "lucide-react";
 import { toast } from "sonner";
 import { generatePixPayload, generateTxid } from "@/lib/pix";
 import Header from "@/components/Header";
@@ -37,6 +37,7 @@ interface ReservationData {
   totalAmount: number;
   customerName: string;
   customerPhone: string;
+  tripDate?: string;
 }
 
 // ============================================================================
@@ -64,6 +65,12 @@ function buildWhatsAppMessage(reservation: ReservationData, txid: string): strin
     .map((i) => `  • ${i.name} (${i.quantity}x) — R$ ${(i.price * i.quantity).toFixed(2).replace(".", ",")}`)
     .join("\n");
 
+  const formatDate = (dateString: string) => {
+    if (!dateString) return "não informada";
+    const date = new Date(dateString + "T00:00:00");
+    return date.toLocaleDateString("pt-BR", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+  };
+
   return [
     `🎫 *NOVA RESERVA — PAGAMENTO ENVIADO*`,
     ``,
@@ -73,6 +80,8 @@ function buildWhatsAppMessage(reservation: ReservationData, txid: string): strin
     itemsList,
     ``,
     `💰 *Total pago:* R$ ${reservation.totalAmount.toFixed(2).replace(".", ",")}`,
+    ``,
+    `📅 *Data da viagem:* ${formatDate(reservation.tripDate || "")}`,
     ``,
     `👤 *Cliente:* ${reservation.customerName || "não informado"}`,
     `📱 *Telefone:* ${reservation.customerPhone || "não informado"}`,
@@ -131,6 +140,7 @@ export default function PixCheckout() {
   const [submitting, setSubmitting] = useState(false);
   const [customerName, setCustomerName] = useState(reservation.customerName || "");
   const [customerPhone, setCustomerPhone] = useState(reservation.customerPhone || "");
+  const [tripDate, setTripDate] = useState(reservation.tripDate || "");
 
   // Renderiza o QR Code
   useEffect(() => {
@@ -179,6 +189,10 @@ export default function PixCheckout() {
       toast.error("Por favor, informe seu número de WhatsApp");
       return;
     }
+    if (!tripDate) {
+      toast.error("Por favor, selecione a data da viagem");
+      return;
+    }
     if (!proofFile) {
       toast.error("Anexe o comprovante de pagamento primeiro");
       return;
@@ -189,6 +203,7 @@ export default function PixCheckout() {
         ...reservation,
         customerName,
         customerPhone,
+        tripDate,
       };
       const message = buildWhatsAppMessage(updatedReservation, txid);
       const url = `https://wa.me/${PIX_CONFIG.ownerWhatsApp}?text=${encodeURIComponent(message)}`;
@@ -333,6 +348,19 @@ export default function PixCheckout() {
                         className="pl-10"
                         value={customerPhone}
                         onChange={(e) => setCustomerPhone(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="tripDate">Data da Viagem</Label>
+                    <div className="relative">
+                      <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input
+                        id="tripDate"
+                        type="date"
+                        className="pl-10"
+                        value={tripDate}
+                        onChange={(e) => setTripDate(e.target.value)}
                       />
                     </div>
                   </div>
