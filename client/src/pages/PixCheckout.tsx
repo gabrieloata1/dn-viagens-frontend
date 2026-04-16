@@ -28,6 +28,9 @@ interface CartItem {
   destination: string;
   price: number;
   quantity: number;
+  optionals?: string[];
+  date?: string;
+  children?: number;
 }
 
 interface ReservationData {
@@ -59,8 +62,15 @@ function formatTime(seconds: number): string {
 
 function buildWhatsAppMessage(reservation: ReservationData, txid: string, customerName: string, customerPhone: string): string {
   const itemsList = reservation.items
-    .map((i) => `  • ${i.name} (${i.quantity}x) — R$ ${(i.price * i.quantity).toFixed(2).replace(".", ",")}`)
-    .join("\n");
+    .map((i) => {
+      let text = `  • ${i.name} (${i.quantity} adultos${i.children ? `, ${i.children} crianças` : ''})`;
+      if (i.date) text += `\n    Data: ${i.date}`;
+      if (i.optionals && i.optionals.length > 0) {
+        text += `\n    Opcionais: ${i.optionals.join(', ')}`;
+      }
+      return text;
+    })
+    .join("\n\n");
 
   return [
     `🎫 *NOVA RESERVA — PAGAMENTO ENVIADO*`,
@@ -87,7 +97,7 @@ export default function PixCheckout() {
   const params = useParams();
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Lê dados do carrinho passados via sessionStorage (setado em Home/Destinations)
+  // Lê dados do carrinho passados via sessionStorage
   const [reservation] = useState<ReservationData>(() => {
     try {
       const stored = sessionStorage.getItem("dn_cart_checkout");
@@ -95,7 +105,6 @@ export default function PixCheckout() {
     } catch {
       // fallback abaixo
     }
-    // Dados de demonstração se não vier nenhum carrinho
     return {
       items: [
         {
@@ -103,10 +112,10 @@ export default function PixCheckout() {
           name: "Passeio Selecionado",
           destination: "Alagoas",
           price: 150,
-          quantity: 2,
+          quantity: 1,
         },
       ],
-      totalAmount: 300,
+      totalAmount: 150,
       customerName: "",
       customerPhone: "",
     };
@@ -190,9 +199,7 @@ export default function PixCheckout() {
       const url = `https://wa.me/${PIX_CONFIG.ownerWhatsApp}?text=${encodeURIComponent(message)}`;
       window.open(url, "_blank");
 
-      // Limpa o carrinho do sessionStorage
       sessionStorage.removeItem("dn_cart_checkout");
-
       toast.success("Pagamento enviado! Você será contatado em breve.");
       setTimeout(() => navigate("/"), 2000);
     } catch {
@@ -233,10 +240,8 @@ export default function PixCheckout() {
           </Card>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* QR Code + copia-e-cola */}
             <div className="space-y-6">
               <Card className="p-8">
-                {/* Timer */}
                 <div className="flex items-center justify-center gap-2 mb-6 text-secondary">
                   <Clock className="w-5 h-5" />
                   <span className="text-2xl font-mono font-bold">
@@ -244,7 +249,6 @@ export default function PixCheckout() {
                   </span>
                 </div>
 
-                {/* Canvas QR */}
                 <div className="flex justify-center mb-6 bg-white p-4 rounded-lg border border-border">
                   <canvas ref={canvasRef} />
                 </div>
@@ -253,7 +257,6 @@ export default function PixCheckout() {
                   Abra o app do seu banco e escaneie o QR Code
                 </p>
 
-                {/* Copia-e-cola */}
                 <div className="border-t border-border pt-4">
                   <p className="text-sm font-semibold mb-2">Ou copie o código PIX:</p>
                   <div className="flex gap-2">
@@ -275,7 +278,6 @@ export default function PixCheckout() {
                 </div>
               </Card>
 
-              {/* Seus Dados */}
               <Card className="p-6">
                 <h2 className="text-xl font-bold mb-4">Seus Dados</h2>
                 <div className="space-y-4">
@@ -309,26 +311,31 @@ export default function PixCheckout() {
               </Card>
             </div>
 
-            {/* Resumo + comprovante */}
             <div className="space-y-6">
-              {/* Resumo da reserva */}
               <Card className="p-6">
                 <h2 className="text-xl font-bold mb-4">Resumo da Reserva</h2>
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {reservation.items.map((item) => (
-                    <div key={item.id} className="flex justify-between text-sm">
-                      <div>
-                        <p className="font-semibold">{item.name}</p>
-                        <p className="text-muted-foreground text-xs">
-                          {item.quantity}x × R$ {item.price.toFixed(2).replace(".", ",")}
-                        </p>
+                    <div key={item.id} className="space-y-2 pb-3 border-b border-border last:border-0">
+                      <div className="flex justify-between">
+                        <span className="font-bold">{item.name}</span>
+                        <span className="font-bold">R$ {(item.price * item.quantity).toFixed(2).replace(".", ",")}</span>
                       </div>
-                      <span className="font-semibold">
-                        R$ {(item.price * item.quantity).toFixed(2).replace(".", ",")}
-                      </span>
+                      <div className="text-sm text-muted-foreground">
+                        <p>{item.quantity} adultos {item.children ? `+ ${item.children} crianças` : ''}</p>
+                        {item.date && <p>Data: {item.date}</p>}
+                        {item.optionals && item.optionals.length > 0 && (
+                          <div className="mt-1">
+                            <p className="font-semibold text-xs uppercase tracking-wider">Opcionais:</p>
+                            <ul className="list-disc list-inside">
+                              {item.optionals.map((opt, idx) => <li key={idx}>{opt}</li>)}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   ))}
-                  <div className="flex justify-between border-t border-border pt-3 mt-3">
+                  <div className="flex justify-between items-center pt-2">
                     <span className="text-lg font-bold">Total</span>
                     <span className="text-2xl font-bold text-secondary">
                       R$ {reservation.totalAmount.toFixed(2).replace(".", ",")}
@@ -337,61 +344,36 @@ export default function PixCheckout() {
                 </div>
               </Card>
 
-              {/* Upload do comprovante */}
               <Card className="p-6">
                 <h2 className="text-xl font-bold mb-2">Comprovante de Pagamento</h2>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Após pagar, anexe o comprovante e clique em confirmar. Entraremos em
-                  contato pelo WhatsApp para finalizar sua reserva.
+                  Anexe o comprovante e clique em confirmar para finalizar sua reserva.
                 </p>
 
                 <label className="block mb-4 cursor-pointer">
-                  <div
-                    className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-                      proofFile
-                        ? "border-primary bg-primary/5"
-                        : "border-border hover:bg-muted/30"
-                    }`}
-                  >
+                  <div className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${proofFile ? "border-primary bg-primary/5" : "border-border hover:bg-muted/30"}`}>
                     <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-                    <p className="text-sm font-semibold">
-                      {proofFile ? `✓ ${proofFile.name}` : "Clique para anexar (foto ou PDF)"}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">Máx 5MB</p>
+                    <p className="text-sm font-semibold">{proofFile ? `✓ ${proofFile.name}` : "Clique para anexar"}</p>
                   </div>
-                  <input
-                    type="file"
-                    accept="image/*,.pdf"
-                    onChange={handleFileSelect}
-                    className="hidden"
-                  />
+                  <input type="file" accept="image/*,.pdf" onChange={handleFileSelect} className="hidden" />
                 </label>
 
-                <Button
-                  onClick={handleConfirmPayment}
-                  disabled={!proofFile || submitting}
-                  className="w-full py-6 text-lg font-semibold"
-                  size="lg"
-                >
-                  {submitting ? (
-                    <>
-                      <Loader2 className="animate-spin mr-2 w-5 h-5" />
-                      Enviando...
-                    </>
-                  ) : (
-                    "Confirmar Pagamento"
-                  )}
+                <Button onClick={handleConfirmPayment} disabled={!proofFile || submitting} className="w-full py-6 text-lg font-bold" size="lg">
+                  {submitting ? <><Loader2 className="animate-spin mr-2" /> Enviando...</> : "Confirmar Pagamento"}
                 </Button>
-
-                <p className="text-xs text-center text-muted-foreground mt-3">
-                  Ao confirmar, sua mensagem com o comprovante será enviada via WhatsApp
-                  para nossa equipe.
-                </p>
               </Card>
             </div>
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function Card({ children, className = "" }: { children: React.ReactNode, className?: string }) {
+  return (
+    <div className={`bg-card rounded-xl border border-border ${className}`}>
+      {children}
     </div>
   );
 }
