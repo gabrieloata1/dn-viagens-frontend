@@ -11,10 +11,10 @@ import Header from "@/components/Header";
 // CONFIGURAÇÃO — DADOS DO CLIENTE DN VIAGENS
 // ============================================================================
 const PIX_CONFIG = {
-  pixKey: "+5582991303370",       // ← chave PIX (trocar pelo real do cliente)
+  pixKey: "+558291303370",       // ← chave PIX
   merchantName: "DN VIAGENS",    // máx 25 chars sem acento
   merchantCity: "MACEIO",        // máx 15 chars sem acento
-  ownerWhatsApp: "5582991303370", // número que recebe comprovantes (DDI+DDD+número)
+  ownerWhatsApp: "558291303370", // número que recebe comprovantes
 };
 
 const RESERVATION_TIMEOUT_MIN = 30;
@@ -46,8 +46,9 @@ interface ReservationData {
 
 async function renderQRCode(canvas: HTMLCanvasElement, payload: string) {
   const QRCode = await import("qrcode");
+  const width = window.innerWidth < 640 ? 240 : 280;
   await QRCode.toCanvas(canvas, payload, {
-    width: 280,
+    width: width,
     margin: 1,
     errorCorrectionLevel: "M",
     color: { dark: "#000000", light: "#ffffff" },
@@ -97,14 +98,11 @@ export default function PixCheckout() {
   const params = useParams();
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Lê dados do carrinho passados via sessionStorage
   const [reservation] = useState<ReservationData>(() => {
     try {
       const stored = sessionStorage.getItem("dn_cart_checkout");
       if (stored) return JSON.parse(stored) as ReservationData;
-    } catch {
-      // fallback abaixo
-    }
+    } catch { }
     return {
       items: [
         {
@@ -123,7 +121,6 @@ export default function PixCheckout() {
 
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
-
   const [txid] = useState(() => generateTxid());
   const [pixPayload] = useState(() =>
     generatePixPayload({
@@ -141,7 +138,6 @@ export default function PixCheckout() {
   const [proofFile, setProofFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  // Renderiza o QR Code
   useEffect(() => {
     if (canvasRef.current) {
       renderQRCode(canvasRef.current, pixPayload).catch(() =>
@@ -150,7 +146,6 @@ export default function PixCheckout() {
     }
   }, [pixPayload]);
 
-  // Timer regressivo
   useEffect(() => {
     if (secondsLeft <= 0) return;
     const interval = setInterval(() => setSecondsLeft((s) => Math.max(0, s - 1)), 1000);
@@ -212,100 +207,98 @@ export default function PixCheckout() {
   const expired = secondsLeft <= 0;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background w-full overflow-x-hidden">
       <Header cartCount={0} onCartClick={() => {}} />
 
-      <div className="container max-w-4xl py-12">
+      <div className="container py-8 md:py-12 w-full">
         <Button
           variant="ghost"
           onClick={() => navigate("/destinos")}
-          className="gap-2 mb-6"
+          className="gap-2 mb-6 hover:bg-muted"
         >
           <ChevronLeft className="w-5 h-5" />
           Voltar
         </Button>
 
-        <h1 className="text-3xl font-bold mb-2">Pagamento via PIX</h1>
-        <p className="text-muted-foreground mb-8">
+        <h1 className="text-2xl md:text-3xl font-bold mb-2">Pagamento via PIX</h1>
+        <p className="text-muted-foreground mb-8 text-sm md:text-base">
           Sua vaga está reservada. Conclua o pagamento em até {RESERVATION_TIMEOUT_MIN} minutos.
         </p>
 
         {expired ? (
-          <Card className="p-12 text-center">
+          <Card className="p-12 text-center shadow-md">
             <h2 className="text-2xl font-bold mb-4 text-destructive">Tempo Expirado</h2>
             <p className="text-muted-foreground mb-6">
               A reserva foi liberada. Faça uma nova reserva para continuar.
             </p>
-            <Button onClick={() => navigate("/destinos")}>Voltar aos destinos</Button>
+            <Button onClick={() => navigate("/destinos")} className="px-8">Voltar aos destinos</Button>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
             <div className="space-y-6">
               {/* QR Code */}
-              <Card className="p-8">
-                <div className="flex items-center justify-center gap-2 mb-6 text-secondary">
+              <Card className="p-4 sm:p-8 shadow-md border-t-4 border-t-primary">
+                <div className="flex items-center justify-center gap-2 mb-6 text-secondary bg-secondary/10 py-2 rounded-full max-w-[200px] mx-auto">
                   <Clock className="w-5 h-5" />
-                  <span className="text-2xl font-mono font-bold">
+                  <span className="text-xl font-mono font-bold">
                     {formatTime(secondsLeft)}
                   </span>
                 </div>
 
-                <div className="flex justify-center mb-6 bg-white p-4 rounded-lg border border-border">
-                  <canvas ref={canvasRef} />
+                <div className="flex justify-center mb-6 bg-white p-2 sm:p-4 rounded-xl border border-border shadow-inner">
+                  <canvas ref={canvasRef} className="max-w-full h-auto" />
                 </div>
 
-                <p className="text-sm text-center text-muted-foreground mb-4">
-                  Abra o app do seu banco e escaneie o QR Code
+                <p className="text-xs sm:text-sm text-center text-muted-foreground mb-6 font-medium">
+                  Abra o app do seu banco e escaneie o QR Code acima
                 </p>
 
-                <div className="border-t border-border pt-4">
-                  <p className="text-sm font-semibold mb-2">Ou copie o código PIX:</p>
+                <div className="border-t border-border pt-6">
+                  <p className="text-sm font-bold mb-3">Ou copie o código PIX:</p>
                   <div className="flex gap-2">
                     <input
                       type="text"
                       readOnly
                       value={pixPayload}
-                      className="flex-1 px-3 py-2 text-xs bg-muted rounded font-mono truncate border border-border"
+                      className="flex-1 px-3 py-3 text-[10px] sm:text-xs bg-muted rounded-lg font-mono truncate border border-border outline-none"
                       onClick={(e) => (e.target as HTMLInputElement).select()}
                     />
-                    <Button onClick={handleCopy} variant="outline" size="icon">
-                      {copied ? (
-                        <Check className="w-4 h-4 text-green-600" />
-                      ) : (
-                        <Copy className="w-4 h-4" />
-                      )}
+                    <Button onClick={handleCopy} variant="secondary" className="px-4 shadow-sm">
+                      {copied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
                     </Button>
                   </div>
                 </div>
               </Card>
 
               {/* Dados do Cliente */}
-              <Card className="p-6">
-                <h2 className="text-xl font-bold mb-4">Seus Dados</h2>
-                <div className="space-y-4">
+              <Card className="p-6 shadow-md">
+                <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+                  <User className="text-primary" size={20} /> Seus Dados
+                </h2>
+                <div className="space-y-5">
                   <div>
-                    <label className="text-sm font-medium mb-1.5 block">Seu Nome Completo</label>
+                    <label className="text-sm font-bold mb-2 block text-muted-foreground">Nome Completo</label>
                     <div className="relative">
-                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/60" />
                       <input
                         type="text"
                         value={customerName}
                         onChange={(e) => setCustomerName(e.target.value)}
                         placeholder="Ex: João Silva"
-                        className="w-full pl-10 pr-4 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary outline-none transition-all"
+                        className="w-full pl-10 pr-4 py-3 bg-muted/30 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="text-sm font-medium mb-1.5 block">Seu WhatsApp</label>
+                    <label className="text-sm font-bold mb-2 block text-muted-foreground">WhatsApp</label>
                     <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/60" />
                       <input
                         type="tel"
                         value={customerPhone}
                         onChange={(e) => setCustomerPhone(e.target.value)}
                         placeholder="Ex: (82) 99999-9999"
-                        className="w-full pl-10 pr-4 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary outline-none transition-all"
+                        className="w-full pl-10 pr-4 py-3 bg-muted/30 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                       />
                     </div>
                   </div>
@@ -315,57 +308,58 @@ export default function PixCheckout() {
 
             {/* Resumo da Reserva */}
             <div className="space-y-6">
-              <Card className="p-6">
-                <h2 className="text-xl font-bold mb-4">Resumo da Reserva</h2>
-                <div className="space-y-4">
+              <Card className="p-6 shadow-md border-t-4 border-t-secondary">
+                <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+                   Resumo da Reserva
+                </h2>
+                <div className="space-y-6">
                   {reservation.items.map((item) => (
-                    <div key={item.id} className="space-y-3 pb-3 border-b border-border last:border-0">
+                    <div key={item.id} className="space-y-4 pb-4 border-b border-border last:border-0 last:pb-0">
                       <div className="flex justify-between items-start">
                         <div>
-                          <p className="font-bold text-lg">{item.name}</p>
-                          <p className="text-sm text-muted-foreground">{item.destination}</p>
+                          <p className="font-extrabold text-xl text-foreground">{item.name}</p>
+                          <p className="text-sm text-muted-foreground font-medium">{item.destination}</p>
                         </div>
-                        <span className="font-bold text-secondary">R$ {reservation.totalAmount.toFixed(2).replace(".", ",")}</span>
+                        <span className="font-extrabold text-xl text-secondary">R$ {reservation.totalAmount.toFixed(2).replace(".", ",")}</span>
                       </div>
                       
-                      <div className="grid grid-cols-2 gap-2 text-sm bg-muted/50 p-3 rounded-lg">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm bg-muted/40 p-4 rounded-xl">
                         <div className="flex items-center gap-2">
                           <Users className="w-4 h-4 text-primary" />
-                          <span className="font-medium">{item.quantity} Adultos</span>
+                          <span className="font-bold">{item.quantity} Adultos</span>
                         </div>
                         {item.children !== undefined && item.children > 0 && (
                           <div className="flex items-center gap-2">
                             <Users className="w-4 h-4 text-primary" />
-                            <span className="font-medium">{item.children} Crianças</span>
+                            <span className="font-bold">{item.children} Crianças</span>
                           </div>
                         )}
                         {item.date && (
-                          <div className="flex items-center gap-2 col-span-2 mt-1">
+                          <div className="flex items-center gap-2 sm:col-span-2">
                             <Clock className="w-4 h-4 text-primary" />
-                            <span className="font-medium">Data: {new Date(item.date + 'T00:00:00').toLocaleDateString('pt-BR')}</span>
+                            <span className="font-bold">Data: {new Date(item.date + 'T00:00:00').toLocaleDateString('pt-BR')}</span>
                           </div>
                         )}
                       </div>
 
                       {item.optionals && item.optionals.length > 0 && (
                         <div className="mt-2">
-                          <p className="font-bold text-xs uppercase tracking-wider text-muted-foreground mb-1">Atrações Opcionais:</p>
-                          <ul className="space-y-1">
+                          <p className="font-extrabold text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Atrações Opcionais:</p>
+                          <div className="flex flex-wrap gap-2">
                             {item.optionals.map((opt, idx) => (
-                              <li key={idx} className="text-sm flex items-center gap-2">
-                                <Check className="w-3 h-3 text-green-500" />
-                                {opt}
-                              </li>
+                              <span key={idx} className="text-xs bg-primary/10 text-primary px-3 py-1 rounded-full font-bold flex items-center gap-1">
+                                <Check size={12} /> {opt}
+                              </span>
                             ))}
-                          </ul>
+                          </div>
                         </div>
                       )}
                     </div>
                   ))}
                   
-                  <div className="flex justify-between items-center pt-2">
+                  <div className="flex justify-between items-center pt-4 border-t border-border">
                     <span className="text-lg font-bold">Total a Pagar</span>
-                    <span className="text-3xl font-bold text-secondary">
+                    <span className="text-3xl font-extrabold text-secondary">
                       R$ {reservation.totalAmount.toFixed(2).replace(".", ",")}
                     </span>
                   </div>
@@ -373,22 +367,22 @@ export default function PixCheckout() {
               </Card>
 
               {/* Comprovante */}
-              <Card className="p-6">
-                <h2 className="text-xl font-bold mb-2">Comprovante de Pagamento</h2>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Anexe o comprovante e clique em confirmar para finalizar sua reserva.
+              <Card className="p-6 shadow-md">
+                <h2 className="text-xl font-bold mb-3">Comprovante</h2>
+                <p className="text-sm text-muted-foreground mb-6 font-medium">
+                  Anexe a foto do comprovante para confirmar sua vaga.
                 </p>
 
-                <label className="block mb-4 cursor-pointer">
-                  <div className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${proofFile ? "border-primary bg-primary/5" : "border-border hover:bg-muted/30"}`}>
-                    <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-                    <p className="text-sm font-semibold">{proofFile ? `✓ ${proofFile.name}` : "Clique para anexar foto ou PDF"}</p>
-                    <p className="text-xs text-muted-foreground mt-1">Máximo 5MB</p>
+                <label className="block mb-6 cursor-pointer">
+                  <div className={`border-2 border-dashed rounded-2xl p-8 text-center transition-all ${proofFile ? "border-primary bg-primary/5 ring-4 ring-primary/10" : "border-border hover:bg-muted/30"}`}>
+                    <Upload className={`w-10 h-10 mx-auto mb-3 ${proofFile ? "text-primary" : "text-muted-foreground"}`} />
+                    <p className="text-sm font-bold">{proofFile ? `✓ ${proofFile.name}` : "Clique para anexar foto"}</p>
+                    <p className="text-[10px] text-muted-foreground mt-2 uppercase tracking-tighter">Máximo 5MB • JPG, PNG ou PDF</p>
                   </div>
                   <input type="file" accept="image/*,.pdf" onChange={handleFileSelect} className="hidden" />
                 </label>
 
-                <Button onClick={handleConfirmPayment} disabled={!proofFile || submitting} className="w-full py-6 text-lg font-bold" size="lg">
+                <Button onClick={handleConfirmPayment} disabled={!proofFile || submitting} className="w-full py-8 text-xl font-extrabold rounded-xl shadow-lg transition-all hover:scale-[1.02]" size="lg">
                   {submitting ? <><Loader2 className="animate-spin mr-2" /> Enviando...</> : "Confirmar Pagamento"}
                 </Button>
               </Card>
@@ -402,7 +396,7 @@ export default function PixCheckout() {
 
 function Card({ children, className = "" }: { children: React.ReactNode, className?: string }) {
   return (
-    <div className={`bg-card rounded-xl border border-border ${className}`}>
+    <div className={`bg-card rounded-2xl border border-border ${className}`}>
       {children}
     </div>
   );
