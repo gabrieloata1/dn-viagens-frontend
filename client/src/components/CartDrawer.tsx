@@ -1,6 +1,7 @@
 import { Package } from '@/lib/mockData';
 import { X, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useLocation } from 'wouter';
 
 interface CartItem extends Package {
   quantity: number;
@@ -21,7 +22,31 @@ export default function CartDrawer({
   onRemove,
   onCheckout,
 }: CartDrawerProps) {
+  const [, navigate] = useLocation();
   const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+  const handleCheckout = () => {
+    if (items.length === 0) return;
+
+    // Salva o carrinho no sessionStorage para o PixCheckout ler
+    const checkoutData = {
+      items: items.map((i) => ({
+        id: i.id,
+        name: i.name,
+        destination: i.destination,
+        price: i.price,
+        quantity: i.quantity,
+      })),
+      totalAmount: total,
+      customerName: "",
+      customerPhone: "",
+    };
+    sessionStorage.setItem("dn_cart_checkout", JSON.stringify(checkoutData));
+
+    onClose();
+    // Usa o id do primeiro item na rota (cosmético — os dados vêm do sessionStorage)
+    navigate(`/checkout/pix/${items[0].id}`);
+  };
 
   if (!isOpen) return null;
 
@@ -104,11 +129,11 @@ export default function CartDrawer({
             </div>
 
             <Button
-              onClick={onCheckout}
+              onClick={handleCheckout}
               className="w-full"
               size="lg"
             >
-              Confirmar Destinos
+              Pagar via PIX
             </Button>
 
             <a
