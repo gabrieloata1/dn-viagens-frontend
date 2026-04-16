@@ -22,6 +22,7 @@ export default function Destinations() {
     { id: 'transfer', label: 'Transfer' },
     { id: 'adventure', label: 'Aventura' },
     { id: 'tour', label: 'Tours' },
+    { id: 'cruise', label: 'Cruzeiros' },
   ];
 
   const filteredPackages =

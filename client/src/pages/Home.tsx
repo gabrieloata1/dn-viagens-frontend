@@ -170,7 +170,29 @@ export default function Home() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {mockPackages.map((pkg) => (
+              {mockPackages.filter(pkg => pkg.category !== 'cruise').map((pkg) => (
+                <PackageCard
+                  key={pkg.id}
+                  package={pkg}
+                  onAddToCart={handleAddToCart}
+                />
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Cruises Section */}
+        <section className="py-20 bg-muted/20">
+          <div className="container">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">Cruzeiros em Destaque</h2>
+              <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
+                As melhores ofertas de cruzeiros nacionais, internacionais e temáticos.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {mockPackages.filter(pkg => pkg.category === 'cruise').map((pkg) => (
                 <PackageCard
                   key={pkg.id}
                   package={pkg}
