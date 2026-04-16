@@ -20,17 +20,28 @@ export interface PixParams {
   description?: string;
 }
 
-/** Calcula CRC16-CCITT (polinômio 0x1021, valor inicial 0xFFFF) — exigido pela spec EMV */
+/** 
+ * Calcula CRC16-CCITT-FALSE (exigido pela spec EMV do PIX)
+ * Polinômio: 0x1021
+ * Valor inicial: 0xFFFF
+ */
 function crc16(payload: string): string {
   let crc = 0xffff;
+  const polynomial = 0x1021;
+
   for (let i = 0; i < payload.length; i++) {
-    crc ^= payload.charCodeAt(i) << 8;
+    let b = payload.charCodeAt(i);
     for (let j = 0; j < 8; j++) {
-      crc = crc & 0x8000 ? (crc << 1) ^ 0x1021 : crc << 1;
-      crc &= 0xffff;
+      let bit = ((b >> (7 - j)) & 1) === 1;
+      let c15 = ((crc >> 15) & 1) === 1;
+      crc <<= 1;
+      if (c15 !== bit) {
+        crc ^= polynomial;
+      }
     }
   }
-  return crc.toString(16).toUpperCase().padStart(4, "0");
+  
+  return (crc & 0xffff).toString(16).toUpperCase().padStart(4, "0");
 }
 
 /** Formata um campo EMV: ID (2 dígitos) + length (2 dígitos) + value */
@@ -45,6 +56,7 @@ function sanitize(text: string): string {
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-zA-Z0-9 ]/g, "")
+    .trim()
     .toUpperCase();
 }
 
@@ -52,22 +64,24 @@ function sanitize(text: string): string {
  * Gera o BR Code PIX (string "copia-e-cola" que vira QR Code)
  */
 export function generatePixPayload(params: PixParams): string {
-  const { pixKey, merchantName, merchantCity, amount, txid, description } = params;
+  const { pixKey, merchantName, merchantCity, amount, txid } = params;
 
   // Merchant Account Information (ID 26) - PIX
   const gui = field("00", "br.gov.bcb.pix");
-  const key = field("01", pixKey);
-  const desc = description ? field("02", sanitize(description).slice(0, 50)) : "";
-  const merchantAccountInfo = field("26", gui + key + desc);
+  // A chave PIX deve ser limpa de caracteres especiais (apenas números para tel/cpf/cnpj)
+  const cleanKey = pixKey.replace(/[^a-zA-Z0-9@.-]/g, "");
+  const key = field("01", cleanKey);
+  const merchantAccountInfo = field("26", gui + key);
 
   // Additional Data Field (ID 62) - txid
-  const txidSanitized = txid.replace(/[^a-zA-Z0-9]/g, "").slice(0, 25);
+  // O txid é obrigatório para QR Estático, mas pode ser "***"
+  const txidSanitized = sanitize(txid).replace(/\s/g, "").slice(0, 25);
   const additionalData = field("62", field("05", txidSanitized || "***"));
 
-  // Monta payload (sem o CRC ainda)
-  const payload =
+  // Monta payload base
+  const payloadBase =
     field("00", "01") + // Payload Format Indicator
-    field("01", "12") + // Point of Initiation Method (12 = QR único, 11 = reutilizável)
+    field("01", "12") + // Point of Initiation Method (12 = QR Estático)
     merchantAccountInfo +
     field("52", "0000") + // Merchant Category Code
     field("53", "986") + // Currency (986 = BRL)
@@ -76,14 +90,13 @@ export function generatePixPayload(params: PixParams): string {
     field("59", sanitize(merchantName).slice(0, 25)) + // Merchant Name
     field("60", sanitize(merchantCity).slice(0, 15)) + // Merchant City
     additionalData +
-    "6304"; // CRC ID + length, valor calculado abaixo
+    "6304"; // CRC ID + length prefix
 
-  return payload + crc16(payload);
+  return payloadBase + crc16(payloadBase);
 }
 
 /**
  * Gera um txid único curto baseado em timestamp + aleatório
- * Formato: DN + 8 chars hex (ex: DN3F2A8B7C)
  */
 export function generateTxid(): string {
   const ts = Date.now().toString(36).toUpperCase().slice(-4);
