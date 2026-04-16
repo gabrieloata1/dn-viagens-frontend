@@ -289,7 +289,7 @@ export default function PixCheckout() {
                       <div>
                         <p className="font-semibold">{item.name}</p>
                         <p className="text-muted-foreground text-xs">
-                          {item.quantity}x × R$ {item.price.toFixed(2).replace(".", ",")}
+                          {item.quantity} {item.quantity === 1 ? "adulto" : "adultos"} × R$ {item.price.toFixed(2).replace(".", ",")}
                         </p>
                       </div>
                       <span className="font-semibold">
