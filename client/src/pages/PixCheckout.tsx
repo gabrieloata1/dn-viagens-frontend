@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useLocation, useParams } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Loader2, Copy, Check, Upload, ChevronLeft, Clock } from "lucide-react";
+import { Loader2, Copy, Check, Upload, ChevronLeft, Clock, User, Phone } from "lucide-react";
 import { toast } from "sonner";
 import { generatePixPayload, generateTxid } from "@/lib/pix";
 import Header from "@/components/Header";
@@ -57,7 +57,7 @@ function formatTime(seconds: number): string {
   return `${m}:${s}`;
 }
 
-function buildWhatsAppMessage(reservation: ReservationData, txid: string): string {
+function buildWhatsAppMessage(reservation: ReservationData, txid: string, customerName: string, customerPhone: string): string {
   const itemsList = reservation.items
     .map((i) => `  • ${i.name} (${i.quantity}x) — R$ ${(i.price * i.quantity).toFixed(2).replace(".", ",")}`)
     .join("\n");
@@ -72,10 +72,10 @@ function buildWhatsAppMessage(reservation: ReservationData, txid: string): strin
     ``,
     `💰 *Total pago:* R$ ${reservation.totalAmount.toFixed(2).replace(".", ",")}`,
     ``,
-    `👤 *Cliente:* ${reservation.customerName || "não informado"}`,
-    `📱 *Telefone:* ${reservation.customerPhone || "não informado"}`,
+    `👤 *Cliente:* ${customerName || "não informado"}`,
+    `📱 *WhatsApp do Cliente:* ${customerPhone || "não informado"}`,
     ``,
-    `_Verifique o comprovante e confirme a reserva._`,
+    `_Verifique o comprovante anexo e confirme a reserva._`,
   ].join("\n");
 }
 
@@ -111,6 +111,9 @@ export default function PixCheckout() {
       customerPhone: "",
     };
   });
+
+  const [customerName, setCustomerName] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
 
   const [txid] = useState(() => generateTxid());
   const [pixPayload] = useState(() =>
@@ -168,20 +171,29 @@ export default function PixCheckout() {
   };
 
   const handleConfirmPayment = async () => {
+    if (!customerName.trim()) {
+      toast.error("Por favor, informe seu nome");
+      return;
+    }
+    if (!customerPhone.trim()) {
+      toast.error("Por favor, informe seu WhatsApp");
+      return;
+    }
     if (!proofFile) {
       toast.error("Anexe o comprovante de pagamento primeiro");
       return;
     }
+    
     setSubmitting(true);
     try {
-      const message = buildWhatsAppMessage(reservation, txid);
+      const message = buildWhatsAppMessage(reservation, txid, customerName, customerPhone);
       const url = `https://wa.me/${PIX_CONFIG.ownerWhatsApp}?text=${encodeURIComponent(message)}`;
       window.open(url, "_blank");
 
       // Limpa o carrinho do sessionStorage
       sessionStorage.removeItem("dn_cart_checkout");
 
-      toast.success("Pagamento confirmado! Você será contatado em breve.");
+      toast.success("Pagamento enviado! Você será contatado em breve.");
       setTimeout(() => navigate("/"), 2000);
     } catch {
       toast.error("Erro ao confirmar. Tente novamente.");
@@ -222,45 +234,80 @@ export default function PixCheckout() {
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* QR Code + copia-e-cola */}
-            <Card className="p-8">
-              {/* Timer */}
-              <div className="flex items-center justify-center gap-2 mb-6 text-secondary">
-                <Clock className="w-5 h-5" />
-                <span className="text-2xl font-mono font-bold">
-                  {formatTime(secondsLeft)}
-                </span>
-              </div>
-
-              {/* Canvas QR */}
-              <div className="flex justify-center mb-6 bg-white p-4 rounded-lg border border-border">
-                <canvas ref={canvasRef} />
-              </div>
-
-              <p className="text-sm text-center text-muted-foreground mb-4">
-                Abra o app do seu banco e escaneie o QR Code
-              </p>
-
-              {/* Copia-e-cola */}
-              <div className="border-t border-border pt-4">
-                <p className="text-sm font-semibold mb-2">Ou copie o código PIX:</p>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    readOnly
-                    value={pixPayload}
-                    className="flex-1 px-3 py-2 text-xs bg-muted rounded font-mono truncate border border-border"
-                    onClick={(e) => (e.target as HTMLInputElement).select()}
-                  />
-                  <Button onClick={handleCopy} variant="outline" size="icon">
-                    {copied ? (
-                      <Check className="w-4 h-4 text-green-600" />
-                    ) : (
-                      <Copy className="w-4 h-4" />
-                    )}
-                  </Button>
+            <div className="space-y-6">
+              <Card className="p-8">
+                {/* Timer */}
+                <div className="flex items-center justify-center gap-2 mb-6 text-secondary">
+                  <Clock className="w-5 h-5" />
+                  <span className="text-2xl font-mono font-bold">
+                    {formatTime(secondsLeft)}
+                  </span>
                 </div>
-              </div>
-            </Card>
+
+                {/* Canvas QR */}
+                <div className="flex justify-center mb-6 bg-white p-4 rounded-lg border border-border">
+                  <canvas ref={canvasRef} />
+                </div>
+
+                <p className="text-sm text-center text-muted-foreground mb-4">
+                  Abra o app do seu banco e escaneie o QR Code
+                </p>
+
+                {/* Copia-e-cola */}
+                <div className="border-t border-border pt-4">
+                  <p className="text-sm font-semibold mb-2">Ou copie o código PIX:</p>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      readOnly
+                      value={pixPayload}
+                      className="flex-1 px-3 py-2 text-xs bg-muted rounded font-mono truncate border border-border"
+                      onClick={(e) => (e.target as HTMLInputElement).select()}
+                    />
+                    <Button onClick={handleCopy} variant="outline" size="icon">
+                      {copied ? (
+                        <Check className="w-4 h-4 text-green-600" />
+                      ) : (
+                        <Copy className="w-4 h-4" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Seus Dados */}
+              <Card className="p-6">
+                <h2 className="text-xl font-bold mb-4">Seus Dados</h2>
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium mb-1.5 block">Seu Nome Completo</label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <input
+                        type="text"
+                        value={customerName}
+                        onChange={(e) => setCustomerName(e.target.value)}
+                        placeholder="Ex: João Silva"
+                        className="w-full pl-10 pr-4 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary outline-none transition-all"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium mb-1.5 block">Seu WhatsApp</label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <input
+                        type="tel"
+                        value={customerPhone}
+                        onChange={(e) => setCustomerPhone(e.target.value)}
+                        placeholder="Ex: (82) 99999-9999"
+                        className="w-full pl-10 pr-4 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary outline-none transition-all"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            </div>
 
             {/* Resumo + comprovante */}
             <div className="space-y-6">
