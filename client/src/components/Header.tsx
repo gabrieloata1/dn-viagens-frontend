@@ -13,8 +13,10 @@ export default function Header({ cartCount, onCartClick }: HeaderProps) {
 
   const navItems = [
     { label: 'INÍCIO', href: '/' },
+    { label: 'D&N VIAGENS', href: '/sobre' },
     { label: 'DESTINOS', href: '/destinos' },
     { label: 'PROGRAMAÇÃO', href: '/programacao' },
+    { label: 'TÁBUA DE MARÉS', href: '/tabua-de-mares' },
     { label: 'TRANSFER', href: '/transfer' },
     { label: 'BLOG', href: '/blog' },
     { label: 'CONTATO', href: '/contato' },

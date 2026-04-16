@@ -63,6 +63,27 @@ export default function Footer() {
             <h3 className="font-bold mb-4">Empresa</h3>
             <ul className="space-y-2 text-sm">
               <li>
+                <Link href="/sobre">
+                  <a className="text-gray-300 hover:text-secondary transition-colors">
+                    Sobre
+                  </a>
+                </Link>
+              </li>
+              <li>
+                <Link href="/programacao">
+                  <a className="text-gray-300 hover:text-secondary transition-colors">
+                    Programação
+                  </a>
+                </Link>
+              </li>
+              <li>
+                <Link href="/tabua-de-mares">
+                  <a className="text-gray-300 hover:text-secondary transition-colors">
+                    Tábua de marés
+                  </a>
+                </Link>
+              </li>
+              <li>
                 <Link href="/contato">
                   <a className="text-gray-300 hover:text-secondary transition-colors">
                     Contato

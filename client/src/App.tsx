@@ -8,6 +8,10 @@ import Home from "./pages/Home";
 import Destinations from "./pages/Destinations";
 import PackageDetail from "./pages/PackageDetail";
 import Contact from "./pages/Contact";
+import Schedule from "./pages/Schedule";
+import Tides from "./pages/Tides";
+import Blog from "./pages/Blog";
+import About from "./pages/About";
 
 
 function Router() {
@@ -16,6 +20,10 @@ function Router() {
       <Route path={"/"} component={Home} />
       <Route path={"/destinos"} component={Destinations} />
       <Route path={"/pacote/:id"} component={PackageDetail} />
+      <Route path={"/programacao"} component={Schedule} />
+      <Route path={"/tabua-de-mares"} component={Tides} />
+      <Route path={"/blog"} component={Blog} />
+      <Route path={"/sobre"} component={About} />
       <Route path={"/contato"} component={Contact} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
