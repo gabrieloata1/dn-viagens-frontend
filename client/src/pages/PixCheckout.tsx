@@ -11,7 +11,7 @@ import Header from "@/components/Header";
 // CONFIGURAÇÃO — DADOS DO CLIENTE DN VIAGENS
 // ============================================================================
 const PIX_CONFIG = {
-  pixKey: "+558291303370",       // ← chave PIX
+  pixKey: "82999827837",       // ← chave PIX
   merchantName: "DN VIAGENS",    // máx 25 chars sem acento
   merchantCity: "MACEIO",        // máx 15 chars sem acento
   ownerWhatsApp: "558291303370", // número que recebe comprovantes
