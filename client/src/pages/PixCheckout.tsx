@@ -16,7 +16,7 @@ const PIX_CONFIG = {
   pixKey: "+5582999827837",       // ← chave PIX (trocar pelo real do cliente)
   merchantName: "DN VIAGENS",    // máx 25 chars sem acento
   merchantCity: "MACEIO",        // máx 15 chars sem acento
-  ownerWhatsApp: "5582999827837", // número que recebe comprovantes (DDI+DDD+número)
+  ownerWhatsApp: "558291303370", // número que recebe comprovantes (DDI+DDD+número)
 };
 
 const RESERVATION_TIMEOUT_MIN = 30;
