@@ -68,12 +68,12 @@ export default function Contact() {
                     <div>
                       <h3 className="font-bold mb-1">WhatsApp 24h</h3>
                       <a
-                        href="https://wa.me/5582999334244"
+                        href="https://wa.me/5582991303370"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-muted-foreground hover:text-primary transition-colors"
                       >
-                        (82) 99933-4244
+                        (82) 9130-3370
                       </a>
                     </div>
                   </div>
@@ -208,7 +208,7 @@ export default function Contact() {
                   <p className="text-sm text-muted-foreground mb-4">
                     Prefere contato mais rápido?
                   </p>
-                  <a href="https://wa.me/5582999334244" target="_blank" rel="noopener noreferrer">
+                  <a href="https://wa.me/5582991303370" target="_blank" rel="noopener noreferrer">
                     <Button variant="secondary" className="w-full">
                       <MessageCircle size={20} className="mr-2" />
                       Conversar no WhatsApp
@@ -225,7 +225,7 @@ export default function Contact() {
 
       {/* Floating WhatsApp Button */}
       <a
-        href="https://wa.me/5582999334244"
+        href="https://wa.me/5582991303370"
         target="_blank"
         rel="noopener noreferrer"
         className="fixed bottom-6 right-6 w-14 h-14 bg-green-500 hover:bg-green-600 text-white rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110 z-30"
