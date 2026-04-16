@@ -2,7 +2,9 @@ import { useState, useEffect, useRef } from "react";
 import { useLocation, useParams } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Loader2, Copy, Check, Upload, ChevronLeft, Clock } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Loader2, Copy, Check, Upload, ChevronLeft, Clock, User, Phone } from "lucide-react";
 import { toast } from "sonner";
 import { generatePixPayload, generateTxid } from "@/lib/pix";
 import Header from "@/components/Header";
@@ -127,6 +129,8 @@ export default function PixCheckout() {
   const [copied, setCopied] = useState(false);
   const [proofFile, setProofFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [customerName, setCustomerName] = useState(reservation.customerName || "");
+  const [customerPhone, setCustomerPhone] = useState(reservation.customerPhone || "");
 
   // Renderiza o QR Code
   useEffect(() => {
@@ -167,13 +171,26 @@ export default function PixCheckout() {
   };
 
   const handleConfirmPayment = async () => {
+    if (!customerName.trim()) {
+      toast.error("Por favor, informe seu nome");
+      return;
+    }
+    if (!customerPhone.trim()) {
+      toast.error("Por favor, informe seu número de WhatsApp");
+      return;
+    }
     if (!proofFile) {
       toast.error("Anexe o comprovante de pagamento primeiro");
       return;
     }
     setSubmitting(true);
     try {
-      const message = buildWhatsAppMessage(reservation, txid);
+      const updatedReservation = {
+        ...reservation,
+        customerName,
+        customerPhone,
+      };
+      const message = buildWhatsAppMessage(updatedReservation, txid);
       const url = `https://wa.me/${PIX_CONFIG.ownerWhatsApp}?text=${encodeURIComponent(message)}`;
       window.open(url, "_blank");
 
@@ -285,6 +302,39 @@ export default function PixCheckout() {
                     <span className="text-2xl font-bold text-secondary">
                       R$ {reservation.totalAmount.toFixed(2).replace(".", ",")}
                     </span>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Dados do Cliente */}
+              <Card className="p-6">
+                <h2 className="text-xl font-bold mb-4">Seus Dados</h2>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Nome Completo</Label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input
+                        id="name"
+                        placeholder="Ex: João Silva"
+                        className="pl-10"
+                        value={customerName}
+                        onChange={(e) => setCustomerName(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">WhatsApp</Label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input
+                        id="phone"
+                        placeholder="Ex: (82) 99999-9999"
+                        className="pl-10"
+                        value={customerPhone}
+                        onChange={(e) => setCustomerPhone(e.target.value)}
+                      />
+                    </div>
                   </div>
                 </div>
               </Card>
