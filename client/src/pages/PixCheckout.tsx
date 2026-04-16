@@ -120,7 +120,6 @@ export default function PixCheckout() {
       merchantCity: PIX_CONFIG.merchantCity,
       amount: reservation.totalAmount,
       txid,
-      description: `DN Viagens ${txid}`,
     })
   );
 
