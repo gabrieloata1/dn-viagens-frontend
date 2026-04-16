@@ -28,13 +28,13 @@ export default function Header({ cartCount, onCartClick }: HeaderProps) {
       <div className="bg-secondary text-secondary-foreground py-2 px-4 text-sm">
         <div className="container flex justify-between items-center">
           <div className="flex gap-4">
-            <a href="tel:+558241412230" className="hover:opacity-80 transition-opacity">
-              📞 Televenda (82) 4141-2230
+            <a href="tel:+558291303370" className="hover:opacity-80 transition-opacity">
+              📞 Televenda (82) 9130-3370
             </a>
             <span>Parcele em até 10x no cartão de crédito</span>
           </div>
           <div className="flex gap-3">
-            <a href="https://wa.me/5582999334244" target="_blank" rel="noopener noreferrer" title="WhatsApp" className="hover:opacity-80">
+            <a href="https://wa.me/558291303370" target="_blank" rel="noopener noreferrer" title="WhatsApp" className="hover:opacity-80">
               💬
             </a>
             <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" title="Instagram" className="hover:opacity-80">
@@ -78,7 +78,7 @@ export default function Header({ cartCount, onCartClick }: HeaderProps) {
           <div className="flex items-center gap-4">
             {/* WhatsApp Button */}
             <a
-              href="https://wa.me/5582999334244"
+              href="https://wa.me/558291303370"
               target="_blank"
               rel="noopener noreferrer"
               className="hidden sm:flex items-center gap-2 text-green-600 hover:text-green-700 transition-colors"

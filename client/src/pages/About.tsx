@@ -111,12 +111,12 @@ export default function About() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div className="bg-blue-700 p-6 rounded-lg">
               <h3 className="font-semibold mb-2">Telefone</h3>
-              <p className="text-lg">(82) 4141-2230</p>
+              <p className="text-lg">(82) 9130-3370</p>
               <p className="text-sm text-blue-200">24 horas</p>
             </div>
             <div className="bg-blue-700 p-6 rounded-lg">
               <h3 className="font-semibold mb-2">WhatsApp</h3>
-              <p className="text-lg">(82) 99334-2447</p>
+              <p className="text-lg">(82) 9130-3370</p>
               <p className="text-sm text-blue-200">Resposta rápida</p>
             </div>
             <div className="bg-blue-700 p-6 rounded-lg">
@@ -127,7 +127,7 @@ export default function About() {
           </div>
 
           <button
-            onClick={() => window.open('https://wa.me/5582993342447', '_blank')}
+            onClick={() => window.open('https://wa.me/558291303370', '_blank')}
             className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
           >
             Enviar Mensagem

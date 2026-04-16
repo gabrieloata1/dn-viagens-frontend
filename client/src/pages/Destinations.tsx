@@ -122,7 +122,7 @@ export default function Destinations() {
             <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
               Entre em contato conosco através do WhatsApp para conhecer outras opções de passeios e pacotes personalizados.
             </p>
-            <a href="https://wa.me/5582999334244" target="_blank" rel="noopener noreferrer">
+            <a href="https://wa.me/558291303370" target="_blank" rel="noopener noreferrer">
               <Button size="lg">
                 <MessageCircle size={20} className="mr-2" />
                 Contato WhatsApp
@@ -148,7 +148,7 @@ export default function Destinations() {
 
       {/* Floating WhatsApp Button */}
       <a
-        href="https://wa.me/5582999334244"
+        href="https://wa.me/558291303370"
         target="_blank"
         rel="noopener noreferrer"
         className="fixed bottom-6 right-6 w-14 h-14 bg-green-500 hover:bg-green-600 text-white rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110 z-30"

@@ -76,14 +76,14 @@ export default function Schedule() {
             <div className="bg-white p-6 rounded-lg">
               <h3 className="font-semibold text-gray-900 mb-2">Reservas 24 horas por telefone</h3>
               <p className="text-gray-600 text-sm mb-3">
-                Nosso número <span className="font-semibold">(82) 4141-2230</span> está disponível 24 horas para reservas de passeios turísticos.
+                Nosso número <span className="font-semibold">(82) 9130-3370</span> está disponível 24 horas para reservas de passeios turísticos.
               </p>
             </div>
 
             <div className="bg-white p-6 rounded-lg">
               <h3 className="font-semibold text-gray-900 mb-2">Reserve pelo WhatsApp</h3>
               <p className="text-gray-600 text-sm mb-3">
-                O WhatsApp da D&N Viagens é <span className="font-semibold">(82) 99334-2447</span> com horário de atendimento 24 horas.
+                O WhatsApp da D&N Viagens é <span className="font-semibold">(82) 9130-3370</span> com horário de atendimento 24 horas.
               </p>
             </div>
 

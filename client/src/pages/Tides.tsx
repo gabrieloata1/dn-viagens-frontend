@@ -80,7 +80,7 @@ export default function Tides() {
             <Button
               size="lg"
               className="bg-white text-blue-600 hover:bg-blue-50 font-semibold"
-              onClick={() => window.open('https://wa.me/5582993342447', '_blank')}
+              onClick={() => window.open('https://wa.me/558291303370', '_blank')}
             >
               <MessageCircle className="w-5 h-5 mr-2" />
               WhatsApp 24h

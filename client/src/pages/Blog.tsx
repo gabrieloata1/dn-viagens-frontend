@@ -96,7 +96,7 @@ export default function Blog() {
             Acompanhe nosso blog para dicas de viagem, informações sobre destinos e as melhores experiências turísticas em Alagoas.
           </p>
           <button
-            onClick={() => window.open('https://wa.me/5582993342447', '_blank')}
+            onClick={() => window.open('https://wa.me/558291303370', '_blank')}
             className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
           >
             Fale Conosco

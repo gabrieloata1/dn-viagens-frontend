@@ -62,7 +62,7 @@ export default function Home() {
               >
                 Explorar Pacotes
               </Button>
-              <a href="https://wa.me/5582999334244" target="_blank" rel="noopener noreferrer">
+              <a href="https://wa.me/558291303370" target="_blank" rel="noopener noreferrer">
                 <Button
                   size="lg"
                   variant="outline"
@@ -183,7 +183,7 @@ export default function Home() {
               >
                 Ver Pacotes
               </Button>
-              <a href="https://wa.me/5582999334244" target="_blank" rel="noopener noreferrer">
+              <a href="https://wa.me/558291303370" target="_blank" rel="noopener noreferrer">
                 <Button
                   size="lg"
                   variant="outline"
@@ -214,7 +214,7 @@ export default function Home() {
 
       {/* Floating WhatsApp Button */}
       <a
-        href="https://wa.me/5582999334244"
+        href="https://wa.me/558291303370"
         target="_blank"
         rel="noopener noreferrer"
         className="fixed bottom-6 right-6 w-14 h-14 bg-green-500 hover:bg-green-600 text-white rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110 z-30"
