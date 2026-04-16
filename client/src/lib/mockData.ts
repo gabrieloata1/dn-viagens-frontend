@@ -10,7 +10,7 @@ export interface Package {
   optionalActivities: Activity[];
   schedule: string;
   frequency: string;
-  category: 'beach' | 'transfer' | 'adventure' | 'tour' | 'cruise';
+  category: 'beach' | 'transfer' | 'adventure' | 'tour' | 'cruise' | 'flight';
 }
 
 export interface Activity {
@@ -449,6 +449,20 @@ export const mockPackages: Package[] = [
     schedule: 'Check-in conforme porto',
     frequency: 'Saídas quinzenais',
     category: 'cruise',
+  },
+  {
+    id: '29',
+    name: 'Passagens Aéreas',
+    destination: 'Nacionais e Internacionais',
+    price: 0,
+    image: '/images/flights/airplane-sky.jpeg',
+    description: 'Encontramos as melhores tarifas para sua viagem nacional ou internacional. Atendimento personalizado para garantir o melhor custo-benefício.',
+    duration: 'Sob consulta',
+    includes: ['Cotação personalizada', 'Melhores tarifas', 'Suporte na emissão'],
+    optionalActivities: [],
+    schedule: 'Atendimento 24h',
+    frequency: 'Todos os dias',
+    category: 'flight',
   },
 ];
 

@@ -23,6 +23,7 @@ export default function Destinations() {
     { id: 'adventure', label: 'Aventura' },
     { id: 'tour', label: 'Tours' },
     { id: 'cruise', label: 'Cruzeiros' },
+    { id: 'flight', label: 'Passagens' },
   ];
 
   const filteredPackages =
